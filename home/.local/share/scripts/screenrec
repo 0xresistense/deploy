@@ -1,0 +1,16 @@
+#!/bin/bash
+
+PIDFILE="${HOME}/.screencast.pid"
+
+if [[ -e "${PIDFILE}" ]]; then
+    # Stop recording
+    kill "$(cat "${PIDFILE}")"
+    rm "${PIDFILE}"
+    notify-send "Screen Recording" "Stopped recording."
+else
+    # Start recording
+    simplescreenrecorder --start-recording &
+    echo $! > "${PIDFILE}"
+    notify-send "Screen Recording" "Started recording."
+fi
+

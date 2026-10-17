@@ -1,0 +1,13 @@
+#!/bin/bash
+# stop app first
+pkill -f '[Ww]indsurf' || true
+
+# backup then remove local app files
+cp -a ~/.config/Windsurf ~/windsurf-config-backup-$(date +%F) 2>/dev/null || true
+rm -rf ~/.config/Windsurf ~/.local/share/Windsurf ~/.cache/Windsurf ~/.codeium/windsurf 2>/dev/null || true
+
+# remove any leftover matches (inspect before deleting if paranoid)
+find $HOME -iname '*windsurf*' -print
+# to delete (only if you trust the results)
+# find $HOME -iname '*windsurf*' -exec rm -rf {} +
+

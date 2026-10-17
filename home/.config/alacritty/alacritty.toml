@@ -1,0 +1,90 @@
+[colors.bright]
+black = "0x23262a"
+blue = "0x3dabe9"
+cyan = "0x16a085"
+green = "0x17d296"
+magenta = "0x8e44ad"
+red = "0xc0392b"
+white = "0xffffff"
+yellow = "0xfdbc4b"
+
+[colors.cursor]
+cursor = "0x3daee9"
+text = "0x18181b"
+
+[colors.normal]
+black = "0x232627"
+blue = "0x1d99f3"
+cyan = "0x1ab89c"
+green = "0x11d116"
+magenta = "0x9b59b6"
+red = "0xed1515"
+white = "0xfcfcfc"
+yellow = "0xf67400"
+
+[colors.primary]
+background = "0x000000"
+foreground = "0xfcfcfc"
+
+[colors.selection]
+background = "0x00a99d"
+text = "0x18181b"
+
+[env]
+TERM = "xterm-256color"
+
+[font]
+size = 12.0
+
+[font.bold]
+family = "Hack Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "Hack Nerd Font"
+style = "Italic"
+
+[font.normal]
+family = "Hack Nerd Font"
+style = "Regular"
+
+[scrolling]
+history = 10000
+multiplier = 3
+
+[selection]
+save_to_clipboard = true
+semantic_escape_chars = ",│|>[](){}:;\"'"
+
+[terminal.shell]
+args = ["--login"]
+program = "/bin/zsh"
+
+[window]
+decorations = "full"
+opacity=0.90
+
+[window.dimensions]
+columns = 120
+lines = 40
+
+[window.padding]
+x = 5
+y = 8
+
+[bell]
+command = {program = "pw-play", args = ["~/.local/share/sounds/beep.wav"]}
+duration=1
+animation="EaseOut"
+
+[keyboard]
+bindings = [
+  { key = "H", mods = "Control|Shift", chars = "\u001b[1;6D" },
+  { key = "L", mods = "Control|Shift", chars = "\u001b[1;6C" },
+  { key = "Backspace", mods = "Control", chars = "\u0017" },
+  { key = "[", mods = "Control", action = "ToggleViMode" },
+  { key = "Y", mods = "Control", action = "Copy" },
+  { key = ";", mods = "Control", action = "Paste" },
+]
+
+

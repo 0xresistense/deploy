@@ -1,0 +1,12 @@
+gnome-keyring-daemon.socket
+hermes-gateway.service
+identity-anchor-check.timer
+identity-v2-backup-drill.timer
+identity-v2-backup.timer
+p11-kit-server.socket
+perf-journal.timer
+pipewire-pulse.socket
+pipewire.socket
+podman.socket
+relayd.service
+wireplumber.service

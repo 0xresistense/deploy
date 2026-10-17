@@ -1,0 +1,7 @@
+nvidia-580xx-dkms
+nvidia-580xx-settings
+nvidia-580xx-utils
+opencl-nvidia-580xx
+libxnvctrl-580xx
+dkms
+linux-lts-headers

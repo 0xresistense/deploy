@@ -1,0 +1,9 @@
+burpsuite
+john
+wine
+wine-mono
+winetricks
+binwalk
+sqlmap
+pcsc-tools
+softhsm

@@ -1,0 +1,6 @@
+configuration {
+    single-click: true;
+    dpi: 67;
+}
+
+@theme "~/.config/rofi/materia-dark.rasi"

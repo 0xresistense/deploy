@@ -1,0 +1,52 @@
+#!/bin/bash
+
+set -e
+
+# Stop networking services
+sudo systemctl stop NetworkManager systemd-networkd systemd-resolved dhcpcd || true
+
+echo "[+] Stopped all network-related services."
+
+# Clear NetworkManager configurations
+sudo rm -rf /etc/NetworkManager/system-connections/* /var/lib/NetworkManager/*
+echo "[+] NetworkManager configuration reset."
+
+# Clear systemd-networkd configurations
+sudo rm -rf /etc/systemd/network/* /etc/systemd/netctl/*
+echo "[+] systemd-networkd configuration reset."
+
+# Clear DHCP leases and configs
+sudo rm -rf /etc/dhcpcd.conf /var/lib/dhcpcd/*
+echo "[+] DHCP configuration reset."
+
+# Restore /etc/resolv.conf
+sudo rm -f /etc/resolv.conf
+sudo ln -s /run/NetworkManager/resolv.conf /etc/resolv.conf
+echo "[+] DNS configuration reset."
+
+# Reinstall networking packages
+sudo pacman -S --noconfirm networkmanager systemd
+
+echo "[+] Network packages reinstalled."
+
+# Ensure NetworkManager uses its internal DHCP client
+sudo nmcli connection modify enp42s0 ipv4.dhcp-client-id ""
+echo "[+] Forced NetworkManager internal DHCP client."
+
+# Reload network interfaces
+sudo ip link set enp42s0 down
+sudo ip link set enp42s0 up
+echo "[+] Network interfaces reloaded."
+
+# Restart and enable NetworkManager
+sudo systemctl enable --now NetworkManager
+echo "[+] NetworkManager restarted and enabled."
+
+# Verify the new network state
+nmcli device status
+ip a
+ip route
+cat /etc/resolv.conf
+
+echo "[+] Network reset completed successfully."
+

@@ -1,0 +1,79 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import fnmatch
+
+if len(sys.argv) != 3:
+    print(f"Usage: {sys.argv[0]} <source_dir> <output_file>")
+    sys.exit(1)
+
+source_dir = sys.argv[1]
+output_file = sys.argv[2]
+
+# Directories and file patterns to exclude
+EXCLUDED_DIRS = {
+    "target",
+    ".git",
+    "docs",
+    "node_modules",
+    ".next",
+    "dist",
+    "coverage",
+    "test-results",
+    "playwright-report",
+    "out",
+    "__pycache__",
+    ".turbo",
+    "__pycache__",
+    "venv",
+    ".claude",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "drizzle",
+    "tests",
+    "__tests__"
+
+}
+EXCLUDED_FILE_PATTERNS = {
+    "lazy-lock.json",
+    "pnpm-lock.yaml",
+    "Cargo.lock",
+    "*.lock",
+    "*.pyc",
+    "*.spec.ts",
+    "*.tmp",
+    "*.log",
+    "pnpm-lock.yaml",
+    "*.ico",
+    "*.png",
+    "*.svg",
+    "*.gif",
+    "*.ttf",
+    "*.otf",
+    "*.md",
+}
+
+
+def should_exclude_file(filename: str) -> bool:
+    return any(fnmatch.fnmatch(filename, pattern) for pattern in EXCLUDED_FILE_PATTERNS)
+
+
+with open(output_file, "w", encoding="utf-8") as out:
+    for root, dirs, files in os.walk(source_dir):
+        # Skip unwanted directories
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+
+        for fname in files:
+            if should_exclude_file(fname):
+                continue
+
+            path = os.path.join(root, fname)
+            out.write(f"{path}\n")
+            try:
+                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                    out.write(f.read())
+            except Exception as e:
+                out.write(f"<<error reading {path}: {e}>>")
+            out.write("\n\n")

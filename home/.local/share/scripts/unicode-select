@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+
+icons=(
+# Dashes / Lines
+"Hyphen → -"
+"Minus → −"
+"En Dash → –"
+"Em Dash → —"
+"Horizontal Bar → ―"
+"Figure Dash → ‒"
+"Soft Hyphen → ­"
+
+# Quotes / Apostrophes
+"Straight Single Quote → '"
+"Straight Double Quote → \""
+"Left Single Quote → ‘"
+"Right Single Quote → ’"
+"Left Double Quote → “"
+"Right Double Quote → ”"
+"Prime → ′"
+"Double Prime → ″"
+
+# Arrows
+"Right Arrow → →"
+"Left Arrow → ←"
+"Up Arrow → ↑"
+"Down Arrow → ↓"
+"Left-Right Arrow → ↔"
+"Up-Down Arrow → ↕"
+"Right Double Arrow → ⇒"
+"Left Double Arrow → ⇐"
+"Up Double Arrow → ⇑"
+"Down Double Arrow → ⇓"
+"Arrow Up-Right → ⤴"
+"Arrow Down-Right → ⤵"
+
+# Math / Operators
+"Plus → +"
+"Minus → −"
+"Multiplication → ×"
+"Division → ÷"
+"Approximately → ≈"
+"Not Equal → ≠"
+"Less or Equal → ≤"
+"Greater or Equal → ≥"
+"Infinity → ∞"
+"Square Root → √"
+"Degree → °"
+"Percent → %"
+
+# Bullets / Lists
+"Bullet → •"
+"Small Circle → ◦"
+"Triangular Bullet → ‣"
+"Square Bullet → ▪"
+"Diamond Bullet → ♦"
+
+# Check / Cross / Stars
+"Check → ✓"
+"Cross → ✗"
+"Star Filled → ★"
+"Star Outline → ☆"
+
+# Brackets / Parentheses
+"Left Parenthesis → ("
+"Right Parenthesis → )"
+"Left Bracket → ["
+"Right Bracket → ]"
+"Left Brace → {"
+"Right Brace → }"
+"Angle Bracket Left → ⟨"
+"Angle Bracket Right → ⟩"
+
+# Currency
+"Dollar → $"
+"Euro → €"
+"Pound → £"
+"Yen → ¥"
+"Rupee → ₹"
+
+# Misc Symbols
+"Copyright → ©"
+"Registered → ®"
+"Trademark → ™"
+"Section → §"
+"Paragraph → ¶"
+"Ellipsis → …"
+"Middle Dot → ·"
+"Interpunct → ‧"
+
+# Emojis / Notes
+"Sun → ☀"
+"Cloud → ☁"
+"Umbrella → ☂"
+"Snowman → ☃"
+"Coffee → ☕"
+"Smiley → ☺"
+"Black Heart → ♥"
+"Spade → ♠"
+"Club → ♣"
+"Diamond → ♦"
+)
+
+# Launch Rofi menu
+choice=$(printf "%s\n" "${icons[@]}" | rofi -dmenu -i -p "Unicode:")
+
+# Extract symbol (after the arrow "→")
+symbol=$(echo "$choice" | awk -F'→' '{print $2}' | xargs)
+
+# Copy to clipboard
+if [ -n "$symbol" ]; then
+  printf "%s" "$symbol" | xclip -selection clipboard
+fi
+

@@ -1,0 +1,19 @@
+#!/bin/sh
+# XSecureLock wallpaper script using feh
+
+# Set your wallpaper image file path here
+IMAGE="${XSECURELOCK_IMAGE_PATH:-$HOME/.local/share/wallpapers/ba-2.png}"
+
+# Validate image exists
+if [ ! -f "$IMAGE" ]; then
+  echo "Image not found: $IMAGE" >&2
+  exit 1
+fi
+
+# Detect lock screen window ID (provided by XSecureLock)
+hex_prefix=0x
+hex_num=$(printf '%x' "$XSCREENSAVER_WINDOW")
+window_id="$hex_prefix$hex_num"
+
+# Run feh to display and scale image in window
+exec feh --auto-zoom --window-id "$window_id" "$IMAGE"

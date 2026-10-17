@@ -1,0 +1,163 @@
+#!/bin/bash
+# ================================
+# Arch Linux Advanced System Optimizer
+# Author: CustomGroup
+# Date: 2025-11-03
+# Purpose: System cleanup, optimization, and benchmarking
+# ================================
+
+# Terminal colors
+RED='\e[0;31m'
+GREEN='\e[0;32m'
+BLUE='\e[0;34m'
+YELLOW='\e[0;33m'
+NC='\e[0m'
+
+# Strict error handling
+set -euo pipefail
+IFS=$'\n\t'
+
+# Root privilege check
+if [[ $EUID -ne 0 ]]; then
+  echo -e "${RED}[!] Root privileges required. Run with sudo.${NC}"
+  exit 1
+fi
+
+# Deep mode flag
+DEEP_MODE=false
+[[ "${1:-}" == "--deep" ]] && DEEP_MODE=true
+
+# Log file
+LOG_FILE="/var/log/arch-optimizer.log"
+exec 1> >(tee -a "$LOG_FILE") 2>&1
+
+# --- Utility functions ---
+show_progress() { echo -e "${GREEN}[+] $1...${NC}"; }
+log_performance() {
+  local label=$1
+  echo -e "\n${BLUE}[*] $label Performance Metrics:${NC}"
+  echo -e "${YELLOW}Memory:${NC}"
+  free -h
+  echo -e "${YELLOW}Disk:${NC}"
+  df -h /
+  echo -e "${YELLOW}System Load:${NC}"
+  uptime
+}
+benchmark_operation() {
+  local start=$(date +%s.%N)
+  "$@"
+  local end=$(date +%s.%N)
+  local elapsed
+  elapsed=$(echo "$end - $start" | bc)
+  echo -e "${BLUE}[*] Took: ${elapsed}s${NC}"
+}
+
+# --- Start ---
+show_progress "Initial system status"
+log_performance "Before"
+
+# --- Package cleanup ---
+show_progress "Advanced package cleanup"
+benchmark_operation bash <<'EOL'
+    pacman -Rns $(pacman -Qtdq) 2>/dev/null || true
+    paccache -rk1
+    paccache -ruk0
+    pacman -Sc --noconfirm
+EOL
+
+# --- Cache cleanup ---
+show_progress "Aggressive cache cleanup"
+benchmark_operation bash <<'EOL'
+    sync
+    echo 3 > /proc/sys/vm/drop_caches
+
+    CACHE_DIRS=(
+        "/tmp"
+        "/var/tmp"
+        "/var/cache/pacman/pkg"
+        "/root/.cache"
+        "/home/*/.cache"
+        "/home/*/.thumbnails"
+        "/home/*/.local/share/Trash"
+    )
+    for dir in "${CACHE_DIRS[@]}"; do
+        find "$dir" -type f -delete 2>/dev/null || true
+    done
+EOL
+
+# --- Memory tuning ---
+show_progress "Memory optimization"
+benchmark_operation bash <<'EOL'
+    swapoff -a && swapon -a
+    sysctl -w vm.swappiness=10
+    sysctl -w vm.vfs_cache_pressure=50
+    sysctl -w vm.dirty_ratio=10
+    sysctl -w vm.dirty_background_ratio=5
+EOL
+
+# --- Storage optimization ---
+show_progress "Storage optimization"
+benchmark_operation bash <<'EOL'
+    fstrim -av 2>/dev/null || true
+    journalctl --vacuum-size=50M
+    find /var/log -type f -regex ".*\.[0-9]+.*" -delete
+    find /var/log -type f -name "*.old" -delete
+    find /var/log -type f -name "*.gz" -delete
+    for log in /var/log/*.log; do truncate -s 0 "$log" 2>/dev/null || true; done
+EOL
+
+# --- System maintenance ---
+show_progress "System optimization"
+benchmark_operation bash <<'EOL'
+    find / -xtype l -delete 2>/dev/null || true
+    fc-cache -f
+    updatedb
+    find /home -type d -name ".thumbnails" -exec rm -rf {} + 2>/dev/null
+EOL
+
+# --- Extended cleanup ---
+show_progress "Extended cleanup (safe)"
+benchmark_operation bash <<'EOL'
+    find /home -type d \( -name ".npm" -o -name ".cargo" -o -name ".cache/yay" \) -exec rm -rf {} + 2>/dev/null || true
+    rm -rf /var/lib/systemd/coredump/* 2>/dev/null || true
+    find /etc/systemd/system -xtype l -delete 2>/dev/null || true
+
+    current_kernel=$(uname -r | sed 's/-ARCH//')
+    ls /lib/modules | grep -v "$current_kernel" | xargs -I{} rm -rf "/lib/modules/{}" 2>/dev/null || true
+
+    find /home -type f \( -name "*.bak" -o -name "*.swp" -o -name "*.tmp" \) -delete 2>/dev/null || true
+
+    pacman-optimize 2>/dev/null || true
+    journalctl --vacuum-time=5d --vacuum-size=50M
+EOL
+
+# --- Detect hidden disk usage ---
+show_progress "Detecting unlinked open files"
+lsof +L1 2>/dev/null | tee -a "$LOG_FILE"
+
+# --- Deep cleanup (optional) ---
+if $DEEP_MODE; then
+  show_progress "Deep cleanup (DANGER MODE)"
+  benchmark_operation bash <<'EOL'
+        current_kernel=$(uname -r)
+        find /boot -type f -name "vmlinuz-*" ! -name "*${current_kernel}*" -delete
+        find /boot -type f -name "initramfs-*" ! -name "*${current_kernel}*" -delete
+        find /var -type f -size +100M -delete 2>/dev/null || true
+        journalctl --vacuum-time=2d --vacuum-size=20M
+EOL
+fi
+
+# --- Final performance log ---
+show_progress "Final system status"
+log_performance "After"
+
+{
+  echo "=== System Information ==="
+  date
+  uname -a
+  pacman -Q | wc -l
+  df -h
+  free -h
+} >>"$LOG_FILE"
+
+echo -e "${GREEN}[✓] Optimization complete. Log: $LOG_FILE${NC}"

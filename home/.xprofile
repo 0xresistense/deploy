@@ -1,0 +1,69 @@
+# export QT_QPA_PLATFORMTHEME="qt5ct"
+# export QT_STYLE_OVERRIDE="qt5ct"
+# export QT_QPA_PLATFORMTHEME="qt6ct"
+export TERMINAL=alacritty
+# Shrink Qt-app UI to match GTK dpi (native res, zero GPU cost)
+export QT_FONT_DPI=67
+
+# Load X resources (Xft.dpi=67) so Chromium/Brave derive device scale 0.7 from
+# XSETTINGS/Xft rather than a --force-device-scale-factor flag. No xsettings
+# daemon runs here, so the X resource is what Chromium reads.
+xrdb -merge ~/.Xresources
+
+# ── Display: single authoritative command for BOTH monitors ──────────────
+# One nvidia metamode sets mode + refresh + position + driver-level tear-free
+# (ForceFullCompositionPipeline, replaces picom) in one shot, so nothing fights
+# it. HDMI-0 = primary/left @100Hz (its max), DP-0 = right @75Hz (its max at
+# 1080p). NVIDIA proprietary only. Verified live 2026-07-17.
+nvidia-settings --assign CurrentMetaMode="HDMI-0: 1920x1080_100 +0+0 {ForceFullCompositionPipeline=On}, DP-0: 1920x1080_75 +1920+0 {ForceFullCompositionPipeline=On}" &
+
+# The metamode above sets modes/positions but NOT the RandR primary flag — without
+# this X defaults DP-0 to primary, so polybar's launch.sh puts the full stats bar
+# on the wrong monitor. Set it explicitly (synchronous, runs before i3/polybar).
+# Safe: only flips the primary property, no mode change; metamode re-apply keeps it.
+xrandr --output HDMI-0 --primary
+
+# Neutral color reset — clears any leftover gamma/brightness ramp (e.g. from a
+# stray redshift/gammastep run) so screens never start dim or yellow-tinted.
+# Redshift autostart is disabled (~/.config/autostart/redshift-gtk.desktop);
+# this is the belt-and-suspenders in case a ramp is applied by anything else.
+xrandr --output HDMI-0 --gamma 1:1:1 --brightness 1.0
+xrandr --output DP-0 --gamma 1:1:1 --brightness 1.0
+
+xfce4-power-manager --sm-client-disable --daemon &
+
+# redshift-gtk &
+
+# --- Display / Saver ---
+# export XSECURELOCK_SAVER=saver_mpv
+# export XSECURELOCK_IMAGE_PATH=__HOME__/.local/share/wallpapers/ba-2.png
+# export XSECURELOCK_SAVER=saver_multiplex
+# export XSECURELOCK_IMAGE_PATH=__HOME__/.local/share/wallpapers/ba-2.png
+export XSECURELOCK_SAVER=saver_xscreensaver
+export XSECURELOCK_XSCREENSAVER_HACK=glslideshow
+# export XSECURELOCK_SAVER=saver_wallpaper
+# export XSECURELOCK_IMAGE_PATH=__HOME__/.local/share/wallpapers/ba-2.png
+# export XSECURELOCK_NO_COMPOSITE=1          # bypass compositing
+export XSECURELOCK_BLANK_DPMS=1            # allow DPMS off
+# export XSECURELOCK_BLANK_TIMEOUT=120       # blank after 2 min
+export XSECURELOCK_BLANK_DPMS_STATE=off
+export XSECURELOCK_SHOW_DATETIME=1         # show clock for orientation
+export XSECURELOCK_SHOW_USERNAME=1         # show username on lock
+
+# --- Authentication ---
+# export XSECURELOCK_AUTH=auth_pam           # PAM-based auth
+# export XSECURELOCK_PAM_SERVICE=xsecurelock # use dedicated PAM service
+
+# --- Input Restrictions ---
+export XSECURELOCK_NO_VT_SWITCH=1          # disable Ctrl+Alt+F1-12
+export XSECURELOCK_DISCARD_FIRST_KEYPRESS=0 # drop accidental input at wake
+# export XSECURELOCK_KEYBOARD_GRAB=1         # grab all key input aggressively
+# export XSECURELOCK_MOUSE_GRAB=1            # same for mouse
+# export XSECURELOCK_HIDE_CURSOR=1           # invisible cursor
+
+# --- Feedback ---
+# export XSECURELOCK_AUTH_BACKGROUND_COLOR=000000
+# export XSECURELOCK_AUTH_FOREGROUND_COLOR=FFFFFF
+# export XSECURELOCK_AUTH_WARNING_COLOR=FF0000
+# export XSECURELOCK_PASSWORD_PROMPT=asterisks # hide input
+export XSECURELOCK_SHOW_FAILURE_COUNT=1

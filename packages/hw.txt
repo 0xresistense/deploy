@@ -1,0 +1,14 @@
+amd-ucode
+android-udev
+autorandr
+ccid
+ddcutil
+efibootmgr
+evtest
+grub
+libmanette
+linux-firmware
+linux-lts
+mtpfs
+opensc
+os-prober

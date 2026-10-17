@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Backing up the mirrorlist before taking backup
+echo ":: Backing up the existing mirrorlist..."
+echo "==> mirrorlist.bak at '/etc/pacman.d/mirrorlist.bak'"
+sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak
+
+echo ""
+
+# Update the mirrorlist using reflector for India
+echo "Refreshing mirrorlist with the fastest mirrors in India..."
+sudo reflector --country 'IN' --latest 20 --sort rate --save /etc/pacman.d/mirrorlist
+
+# Synchronize the package databases
+sudo pacman -Syy
+

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Bluetooth device MAC address
+MAC_ADDRESS="B9:1B:F5:0D:45:FB"
+
+# Notification messages and icons
+NOTIFY_OK="Bluetooth device connected successfully."
+NOTIFY_FAIL="Failed to connect Bluetooth device."
+NOTIFY_ALREADY_CONNECTED="Bluetooth device is already connected."
+ICON_OK="/usr/share/icons/elementary/actions@3x/24/selection-remove.svg"
+ICON_ALREADY_CONNECTED="/usr/share/icons/elementary/actions@3x/24/help-contents.svg"
+ICON_PROGRESS="/usr/share/icons/elementary/categories/128/preferences-system-notifications.svg"
+ICON_FAIL="/usr/share/icons/elementary/actions@3x/24/process-stop.svg"
+
+# Log file for debugging (optional)
+LOG_FILE="$HOME/.bluetooth_connect.log"
+
+# Function to log messages
+log() {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - $1" >> "$LOG_FILE"
+}
+
+# Function to check connection status
+check_connection() {
+    bluetoothctl info "$MAC_ADDRESS" | grep -q "Connected: yes"
+    return $?
+}
+
+# Function to connect to the Bluetooth device
+connect_bluetooth() {
+    bluetoothctl connect "$MAC_ADDRESS" &>> "$LOG_FILE"
+    return $?
+}
+
+# Send a starting notification to show script is running
+notify-send -i "$ICON_PROGRESS" "Bluetooth" "Connecting to Bluetooth device..."
+log "Bluetooth device connect attempt started."
+
+# Main script logic
+if check_connection; then
+    log "Device $MAC_ADDRESS is already connected."
+    notify-send -i "$ICON_ALREADY_CONNECTED" "Bluetooth" "$NOTIFY_ALREADY_CONNECTED"
+    exit 0
+fi
+
+# Attempt to connect, showing progress
+if connect_bluetooth; then
+    log "Successfully connected to $MAC_ADDRESS."
+    notify-send -i "$ICON_OK" "Bluetooth" "$NOTIFY_OK"
+else
+    log "Failed to connect to $MAC_ADDRESS."
+    notify-send -i "$ICON_FAIL" "Bluetooth" "$NOTIFY_FAIL"
+    exit 1
+fi
+

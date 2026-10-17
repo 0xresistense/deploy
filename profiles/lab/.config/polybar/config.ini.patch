@@ -1,0 +1,10 @@
+# The lab tier installs neither the ProtonVPN tooling nor redshift, so their
+# bar modules would shell out to binaries the target does not have.
+#
+# Applied to the DEPLOYED tree, which comes from this repo's home/ — not from
+# a live $HOME. In that tree only ' ss protonvpn' is present: capture.sh
+# already strips ' ss redshift' while building home/. The redshift rule is
+# kept as a safety net for the day that duplicate strip moves out of
+# capture.sh, where it does not belong.
+s/ ss protonvpn//g
+s/ ss redshift//g

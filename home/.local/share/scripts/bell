@@ -1,0 +1,2 @@
+#!/bin/bash
+pw-play __HOME__/.local/share/sounds/beep.wav &

@@ -1,0 +1,4 @@
+#! /usr/bin/bash
+
+pactl load-module module-combine-sink sink_name=all_outputs
+

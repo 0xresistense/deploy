@@ -1,0 +1,17 @@
+gimp
+obs-studio
+obs-studio-plugin-browser
+peek
+vlc
+vlc-plugin-ass
+vlc-plugin-chromecast
+vlc-plugin-dca
+vlc-plugin-ffmpeg
+vlc-plugin-freetype
+vlc-plugin-mpeg2
+vlc-plugin-notify
+vlc-plugin-sftp
+vlc-plugin-smb
+vlc-plugin-soxr
+vlc-plugin-upnp
+yt-dlp

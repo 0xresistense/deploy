@@ -1,0 +1,37 @@
+#!/bin/bash
+# Usage: setprj <path>
+# Description: Sets the current working project path for easily cd-ing to the project
+# This script sets or updates the PRJ shell variable in the ~/.zshrc file.
+
+ZSHRC="$HOME/.zshrc"
+VAR_NAME="PRJ"
+
+# Check if argument is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <path>"
+    exit 1
+fi
+
+# Convert to absolute path
+PROJECT_PATH="$(cd "$(dirname "$1")" 2>/dev/null && pwd)/$(basename "$1")"
+
+# Check if directory exists
+if [ ! -d "$PROJECT_PATH" ]; then
+    echo "Error: '$1' is not a valid directory."
+    exit 1
+fi
+
+# Create backup of zshrc
+cp "$ZSHRC" "$ZSHRC.bak"
+
+if grep -q "^export $VAR_NAME=" "$ZSHRC"; then
+    # Update the existing PRJ variable
+    sed -i'' "s|^export $VAR_NAME=.*|export $VAR_NAME=\"$PROJECT_PATH\"|" "$ZSHRC"
+else
+    # Add a new PRJ variable
+    echo "export $VAR_NAME=\"$PROJECT_PATH\"" >> "$ZSHRC"
+fi
+
+echo "PRJ set to: $PROJECT_PATH"
+echo "Changes have been written to $ZSHRC"
+echo "Please run 'source ~/.zshrc' to apply the changes in your current shell."

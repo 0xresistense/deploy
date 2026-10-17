@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+STEP=10
+
+# Detect backend
+if ls /sys/class/backlight/ddcci-* &>/dev/null; then
+    USE_BACKLIGHT=true
+    BDEV=$(ls /sys/class/backlight/ | grep '^ddcci' | head -1)
+elif command -v ddcutil &>/dev/null; then
+    USE_BACKLIGHT=false
+    DISPLAY_ID=1
+else
+    echo "N/A"
+    exit 0
+fi
+
+# Get brightness (cur max)
+get_brightness() {
+    local cur=0 max=100
+    if $USE_BACKLIGHT; then
+        cur=$(brightnessctl -d "$BDEV" get 2>/dev/null)
+        max=$(brightnessctl -d "$BDEV" max 2>/dev/null)
+    else
+        out=$(ddcutil getvcp 10 -d $DISPLAY_ID 2>/dev/null)
+        cur=$(echo "$out" | grep -oP '(?<=current value = )\d+')
+        max=$(echo "$out" | grep -oP '(?<=max value = )\d+')
+    fi
+    # fallback defaults if parsing failed
+    [[ -z "$cur" ]] && cur=50
+    [[ -z "$max" || $max -eq 0 ]] && max=100
+    echo "$cur $max"
+}
+
+set_brightness() {
+    local val=$1
+    if $USE_BACKLIGHT; then
+        brightnessctl -d "$BDEV" set "$val" &>/dev/null
+    else
+        ddcutil setvcp 10 "$val" -d $DISPLAY_ID --noverify &>/dev/null
+    fi
+}
+
+# Action
+action="${1:-get}"
+
+read current maxval < <(get_brightness)
+
+case "$action" in
+    inc)
+        new=$((current + (maxval * STEP / 100)))
+        ((new > maxval)) && new=$maxval
+        set_brightness "$new"
+        current=$new
+        ;;
+    dec)
+        new=$((current - (maxval * STEP / 100)))
+        ((new < 0)) && new=0
+        set_brightness "$new"
+        current=$new
+        ;;
+    set|[0-9]*)
+        val=${2:-$action}
+        new=$((val * maxval / 100))
+        ((new > maxval)) && new=$maxval
+        ((new < 0)) && new=0
+        set_brightness "$new"
+        current=$new
+        ;;
+    get|*)
+        # just print current
+        ;;
+esac
+
+percent=$((current * 100 / maxval))
+echo "${percent}%"
+

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Flash effect using xrandr
+xrandr --output $(xrandr | grep " connected" | cut -f1 -d " ") --brightness .8
+sleep 0.1
+xrandr --output $(xrandr | grep " connected" | cut -f1 -d " ") --brightness 1
+
+# Take a screenshot
+scrot "$HOME/Pictures/Screenshots/$(date +'%Y-%m-%d')-$(printf '%04d' $(ls -1q $HOME/Pictures/Screenshots/*.png | wc -l)).png"
+

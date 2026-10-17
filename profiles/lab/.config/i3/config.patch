@@ -1,0 +1,4 @@
+# lab tier has no thunar: repoint $mod+1 at ranger, which it does have.
+s|exec thunar|exec alacritty -e ranger|
+# lab tier has no rofimoji: drop the $mod+period bind entirely.
+/rofimoji/d

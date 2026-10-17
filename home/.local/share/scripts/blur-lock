@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# Lock screen script using i3lock-color with blurred screenshot
+# Gruvbox dark theme colors
+
+PICTURE=/tmp/i3lock.png
+
+# Take screenshot using import (imagemagick)
+import -window root "$PICTURE"
+
+# Blur the screenshot
+convert "$PICTURE" -blur 0x30 "$PICTURE"
+
+# Lock with i3lock-color
+i3lock \
+    -i "$PICTURE" \
+    --nofork \
+    --ignore-empty-password \
+    --show-failed-attempts \
+    --clock \
+    --indicator \
+    --time-str="%H:%M" \
+    --date-str="%A, %d %B" \
+    --time-size=64 \
+    --date-size=24 \
+    --time-color=ebdbb2ff \
+    --date-color=ebdbb2ff \
+    --inside-color=1d202180 \
+    --ring-color=504945ff \
+    --line-color=00000000 \
+    --keyhl-color=b8bb26ff \
+    --bshl-color=ea6962ff \
+    --separator-color=00000000 \
+    --insidever-color=45858880 \
+    --ringver-color=458588ff \
+    --insidewrong-color=ea696280 \
+    --ringwrong-color=ea6962ff \
+    --verif-text="verifying..." \
+    --wrong-text="wrong!" \
+    --verif-color=ebdbb2ff \
+    --wrong-color=ea6962ff \
+    --radius=120 \
+    --ring-width=8
+
+# Clean up
+rm -f "$PICTURE"

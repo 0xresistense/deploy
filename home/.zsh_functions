@@ -1,0 +1,94 @@
+cf() {
+  local mode="path" sep=" "
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -f|--file)    mode="file"; shift ;;
+      -c|--content) mode="content"; shift ;;
+      -n|--newline) sep=$'\n'; shift ;;
+      -h|--help)
+        echo "Usage: cf [OPTIONS] <file> [...]"
+        echo "Copy file paths, files, or contents to clipboard"
+        echo ""
+        echo "Options:"
+        echo "  -f, --file     Copy actual file (paste in file manager/browser)"
+        echo "  -c, --content  Copy file contents as text"
+        echo "  -n, --newline  Separate paths with newlines (default: space)"
+        echo "  -h, --help     Show this help"
+        echo ""
+        echo "Examples:"
+        echo "  cf file.txt           Copy path: /full/path/file.txt"
+        echo "  cf -n *.sh            Copy paths, one per line"
+        echo "  cf -f image.png       Copy image for browser/app paste"
+        echo "  cf -f *.pdf           Copy files for file manager paste"
+        echo "  cf -c config.yaml     Copy file contents as text"
+        return 0 ;;
+      -*) echo "Unknown option: $1" >&2; return 1 ;;
+      *)  break ;;
+    esac
+  done
+
+  [[ $# -eq 0 ]] && { echo "cf: missing file operand (try cf --help)" >&2; return 1; }
+
+  local paths=()
+  for f in "$@"; do
+    if [[ -e "$f" ]]; then
+      paths+=("$(realpath -- "$f")")
+    else
+      echo "Not found: $f" >&2
+    fi
+  done
+  [[ ${#paths[@]} -eq 0 ]] && return 1
+
+  case "$mode" in
+    path)
+      local IFS="$sep"
+      echo -n "${paths[*]}" | xclip -selection clipboard
+      echo "Copied ${#paths[@]} path(s)"
+      ;;
+    content)
+      [[ ${#paths[@]} -gt 1 ]] && { echo "cf: -c only supports single file" >&2; return 1; }
+      xclip -selection clipboard -i "${paths[1]}"
+      echo "Copied contents: ${paths[1]##*/}"
+      ;;
+    file)
+      # Single image? Copy actual data for browser paste
+      if [[ ${#paths[@]} -eq 1 ]]; then
+        local mime=$(file -b --mime-type "${paths[1]}")
+        if [[ "$mime" == image/* ]]; then
+          xclip -selection clipboard -t "$mime" -i "${paths[1]}"
+          echo "Copied image: ${paths[1]##*/}"
+          return 0
+        fi
+      fi
+      # Otherwise use gnome-copied-files for file manager paste
+      {
+        echo "copy"
+        for p in "${paths[@]}"; do
+          echo "file://$p"
+        done
+      } | xclip -selection clipboard -t x-special/gnome-copied-files
+      echo "Copied ${#paths[@]} file(s)"
+      ;;
+  esac
+}
+
+gl() {
+  git log --pretty=format:"%h|%ad|%ce|%s" \
+    --date=format:"%Y-%m-%d %H:%M:%S" "$@" |
+  column -t -s "|" |
+  sed -E $'s/^([0-9a-f]+)/\x1b[33m\\1\x1b[0m/; s/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+)/\x1b[36m\\1\x1b[0m/'
+}
+
+ps-next(){
+  for pid in $(pgrep -f 'next-server'); do
+    cwd=$(readlink /proc/$pid/cwd)
+    port=$(ss -ltnp 2>/dev/null |
+        grep "pid=$pid," |
+        sed -n 's/.*:\([0-9]\+\) .*$/\1/p' |
+        head -1)
+
+    printf '%-6s %-5s %s\n' "$port" "$pid" "$cwd"
+done | sort -n
+}
+
